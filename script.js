@@ -46,7 +46,6 @@ function fallbackRepair(text, result) {
     }
 
     if (!result.vessel_size) {
-        // FIXED PROBLEM 2: Handled internal comma notations for high-capacity tonnage values
         let s = text.match(/([\d,]{4,10})\s*DWT/i);
         if (s) result.vessel_size = s[1].replace(/,/g, "").trim();
     }
@@ -90,11 +89,10 @@ function processEmail() {
     const summaryBox = document.getElementById("summary");
     const statsBox = document.getElementById("stats");
 
-    loader.classList.remove("hidden");
+    if (loader) loader.classList.remove("hidden");
 
     let rawEmailText = document.getElementById("emailText").value || "";
     
-    // FIXED PROBLEM 1 & 5: Expanded the commodity qualifier space lookahead up to 10 words, and included alternative charter/owner account prefixes
     let rawChunks = rawEmailText.split(/(?=\b(?:MV|M\.V\.)\b|\b(?:MTS?|MT|KT|K)\b(?:\s+[A-Za-z0-9,\-\/]+){0,10}\s+(?:COAL|CEMENT|GRAIN|ORE|STEEL|WHEAT|PETCOKE|FERTILIZER|CLINKER|SALT|SUGAR|BAUXITE|AGGREGATES|WOODCHIPS|COKE)\b|\b(?:DELIVERY|DELY)\b|\b(?:ACCOUNT|ACCT|A\/C|ACC|OWNERS|OWNER|FOR|CHRTRS)\b)/i);
     
     let finalRecords = [];
@@ -107,11 +105,10 @@ function processEmail() {
         
         let chunkUpper = chunkText.toUpperCase();
 
-        // FIXED PROBLEM 5: Broadened pattern group checks to detect unstructured accounts (e.g. OWNERS:, FOR ABC SHIPPING)
         let accMatch = chunk.match(/(?:\bACCOUNT\b|\bACCT\b|\bA\/C\b|\bACC\b|\bOWNERS\b|\bOWNER\b|\bFOR\b|\bCHRTRS\b)\s*:?\s*([A-Za-z0-9,\- ]+?)(?=\s*[\r\n]|\sOPEN|\sDWT|\sO\/A|\sLAYCAN|\sLC|\sDELIVERY|\sDELY|\sREDELIVERY|\sREDEL|\sPOL|\sPOD|\sDISCHARGE|\sBULK|\sTANKER|$)/i);
         if (accMatch) {
             let parsedAcc = accMatch[1].trim();
-            if (!/^(?:DIRECT|MARKET)$/i.test(parsedAcc)) { 
+            if (parsedAcc.length > 2 && !/^(?:DIRECT|MARKET)$/i.test(parsedAcc)) { 
                 activeAccountContext = parsedAcc;
             }
         }
@@ -130,11 +127,9 @@ function processEmail() {
                               chunkText.match(/(?:MV|M\.V\.|VESSEL)?\s*([A-Za-z][A-Za-z0-9\-\/ ]+?)\s+DWT/i);
             if (vesselMatch) result.vessel_name = cleanField(vesselMatch[1]);
 
-            // FIXED PROBLEM 2: Extracted Deadweight sizes containing embedded commas safely
             let sizeMatch = chunkText.match(/([\d,]{4,10})\s*DWT/i);
             if (sizeMatch) result.vessel_size = sizeMatch[1].replace(/,/g, "");
 
-            // FIXED PROBLEM 3: Integrated chronological terms (PROMPT, SPOT, MID, ETA) into the lookahead matrix to stop port name clipping
             let portMatch = chunkUpper.match(/OPEN\s+([A-Z0-9,\-\/\s]{3,}?)(?=\sPROMPT|\sSPOT|\sMID|\sEARLY|\sLYCN|\sLAYCAN|\sO\/A|\sETA|\sACC|\bACCOUNT\b|\bACCT\b|\s\d|$)/);
             if (portMatch) result.open_port = cleanField(portMatch[1]);
 
@@ -149,7 +144,8 @@ function processEmail() {
                 "HANDYSIZE", "SUPRAMAX", "ULTRAMAX", "PANAMAX", "KAMSARMAX", "CAPE", "CAPESIZE",
                 "MR", "LR1", "LR2", "VLCC", "AFRAMAX"
             ];
-            result.vessel_type = vesselTypes.find(v => chunkUpper.includes(v)) || "Not Found";
+            let normalizedUpper = chunkUpper.replace(/\s+/g, ' ');
+            result.vessel_type = vesselTypes.find(v => normalizedUpper.includes(v)) || "Not Found";
 
             if (!result.vessel_name) {
                 let fb = chunkText.match(/\b([A-Za-z][A-Za-z0-9\-\/]{2,}(?:\s+[A-Za-z0-9\-\/]{2,}){1,3})\b/);
@@ -161,8 +157,7 @@ function processEmail() {
         else if (category === "Cargo VC") {
             expectedFields = ["cargo_name", "loading_port", "discharge_port", "laycan"];
 
-            // FIXED PROBLEM 4: Bound cargo string captures using specialized lookaheads to protect adjacent operations fields
-            let cargoMatch = chunkText.match(/(?:\d+[\d,]*\s*(?:MTS?|MT|KT|K)\s+)?\b([A-Za-z0-9\-\/\s]{3,35}?)(?=\s*LOAD|\s*POL|\s*DISCHARGE|\s*LAYCAN|\s*1\d|\s*2\d|\s*3\d)/i) ||
+            let cargoMatch = chunkText.match(/(?:\d+[\d,]*\s*(?:MT|MTS|MTON|KT|K)\s+)?\b([A-Z][A-Z\s\-\/]{2,30}?)(?=\s+(LOAD|POL|DISCHARGE|LAYCAN))/i) ||
                              chunkText.match(/(?:MTS?|MT|KT|K)\s+([A-Za-z0-9,\-\/\s]+?)(?=\sLOAD PORT|\sPOL|\sDISCHARGE|\sLAYCAN|$)/i);
             
             if (cargoMatch) {
@@ -180,7 +175,7 @@ function processEmail() {
                             chunkText.match(/POD\s*:?\s*([A-Za-z0-9,\-\/\s]+?)(?=\sLAYCAN|$)/i);
             if (discharge) result.discharge_port = discharge[1].trim();
 
-            let laycan = chunkText.match(/LAYCAN\s*:?\s*([A-Za-z0-9,\-\/\s]+?)(?=\sACC|\bACCOUNT\b|\sFREIGHT|\sCHOPT|$)/i) ||
+            let laycan = chunkText.match(/LAYCAN\s*:?\s*([A-Z0-9\-\/\s]{3,20}?)(?=\s+(ACC|ACCOUNT|FREIGHT|CHOPT|T\/C|TIME|$))/i) ||
                          chunkText.match(/\b\d{1,2}(?:[\s\-\/\d]+?)[A-Z]{3,}\b/i);
             if (laycan) result.laycan = (laycan[1] || laycan[0]).trim();
         }
@@ -199,7 +194,7 @@ function processEmail() {
                              chunkText.match(/REDEL\s*:?\s*([A-Za-z0-9,\-\/\s]+?)(?=\sLAYCAN|\sLC|\sACC|\bACCOUNT\b|$)/i);
             if (redelivery) result.redelivery_port = redelivery[1].trim();
 
-            let laycan = chunkText.match(/LAYCAN\s*:?\s*([A-Za-z0-9,\-\/\s]+?)(?=\sACC|\bACCOUNT\b|\sRATE|\sDURATION|$)/i) || 
+            let laycan = chunkText.match(/LAYCAN\s*:?\s*([A-Z0-9\-\/\s]{3,20}?)(?=\s+(ACC|ACCOUNT|FREIGHT|CHOPT|T\/C|TIME|$))/i) || 
                          chunkText.match(/LC\s*:?\s*([A-Za-z0-9,\-\/\s]+?)(?=\sACC|\bACCOUNT\b|\sRATE|\sDURATION|$)/i);
             if (laycan) result.laycan = laycan[1].trim();
         }
@@ -224,7 +219,7 @@ function processEmail() {
 
     // ---------------- OUTPUT RENDERING ----------------
     lastResult = finalRecords;
-    output.textContent = JSON.stringify(finalRecords, null, 4);
+    if (output) output.textContent = JSON.stringify(finalRecords, null, 4);
 
     let summaryText = `Extracted ${finalRecords.length} records successfully. `;
     summaryText += finalRecords.map((r, i) => {
@@ -233,15 +228,15 @@ function processEmail() {
         if (r.category === "Cargo TC") return `[#${i+1}: Time Charter Delivery - ${r.delivery_port || "Unknown"}]`;
         return `[#${i+1}: Unrecognized Layout]`;
     }).join(" ");
-    summaryBox.textContent = summaryText;
+    if (summaryBox) summaryBox.textContent = summaryText;
 
     let prime = finalRecords[0];
     let expected = prime.category === "Tonnage" ? 6 : (prime.category === "Cargo VC" || prime.category === "Cargo TC" ? 4 : 0);
     let primeFilled = expected > 0 ? Object.keys(prime).filter(f => prime[f] && prime[f] !== "Not Found" && f !== "category" && f !== "confidence").length : 0;
-    statsBox.textContent = `Global Records: ${finalRecords.length} | Prime Schema Completeness: ${primeFilled}/${expected} | Score: ${(prime.confidence || 0).toFixed(2)}`;
+    if (statsBox) statsBox.textContent = `Global Records: ${finalRecords.length} | Prime Schema Completeness: ${primeFilled}/${expected} | Score: ${(prime.confidence || 0).toFixed(2)}`;
 
     setTimeout(() => {
-        loader.classList.add("hidden");
+        if (loader) loader.classList.add("hidden");
     }, 300);
 }
 
@@ -253,26 +248,28 @@ function downloadJSON() {
     a.download = "shipping_fixtures.json";
     a.click();
 }
+
+// ---------------- FIXED BATCH TESTING ENGINE ----------------
 function runAllTests() {
     let input = document.getElementById("testInput").value;
-
-    // each line = one test case
     let cases = input.split("\n").filter(line => line.trim() !== "");
-
     let results = [];
 
     for (let i = 0; i < cases.length; i++) {
+        // 1. Inject sample data into the source text field
         document.getElementById("emailText").value = cases[i];
 
-        processEmail(); // your existing function
+        // 2. Execute synchronous structural extraction
+        processEmail();
 
+        // 3. FIXED ISSUE 1: Force an absolute deep-copy to shield output arrays from race-condition overwrites
         results.push({
             testCase: i + 1,
             input: cases[i],
-            output: lastResult
+            output: JSON.parse(JSON.stringify(lastResult))
         });
     }
 
-    document.getElementById("testOutput").textContent =
-        JSON.stringify(results, null, 2);
+    // 4. Print clean isolated array segments straight to UI
+    document.getElementById("testOutput").textContent = JSON.stringify(results, null, 2);
 }
