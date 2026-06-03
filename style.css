@@ -68,34 +68,6 @@ header {
 }
 
 /* Debug UI Controls */
-.controls-top {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.switch-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12px;
-    color: var(--text-muted);
-    cursor: pointer;
-}
-
-.switch-container input {
-    display: none;
-}
-
-.slider {
-    width: 36px;
-    height: 18px;
-    background-color: var(--bg-card);
-    border-radius: 20px;
-    position: relative;
-    border: 1px solid var(--border-color);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
 .slider::before {
     content: "";
@@ -383,15 +355,7 @@ pre::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover {
 }
 
 /* Bulk Automation Test Suite Section */
-.test-suite {
-    margin-top: 8px;
-}
 
-.test-input-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-}
 
 @media(max-width: 1024px) {
     .test-input-layout {
@@ -399,11 +363,3 @@ pre::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover {
     }
 }
 
-.test-suite textarea {
-    height: 220px;
-}
-
-.test-suite pre {
-    height: 220px;
-    color: #a7f3d0;
-}
