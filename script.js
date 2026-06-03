@@ -253,3 +253,26 @@ function downloadJSON() {
     a.download = "shipping_fixtures.json";
     a.click();
 }
+function runAllTests() {
+    let input = document.getElementById("testInput").value;
+
+    // each line = one test case
+    let cases = input.split("\n").filter(line => line.trim() !== "");
+
+    let results = [];
+
+    for (let i = 0; i < cases.length; i++) {
+        document.getElementById("emailText").value = cases[i];
+
+        processEmail(); // your existing function
+
+        results.push({
+            testCase: i + 1,
+            input: cases[i],
+            output: lastResult
+        });
+    }
+
+    document.getElementById("testOutput").textContent =
+        JSON.stringify(results, null, 2);
+}
