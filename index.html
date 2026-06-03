@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Email Segregation System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>⚓ Shipping Email Segregation System</h1>
+
+    <p class="subtitle">
+        AI-Assisted Maritime Email Classification & Extraction
+    </p>
+
+    <textarea id="emailText"
+        placeholder="Paste shipping email content here..."></textarea>
+
+    <br>
+
+    <button onclick="processEmail()">Process Email</button>
+    <button onclick="downloadJSON()">Download JSON</button>
+
+    <div id="loader" class="loader hidden">
+        🚢 Processing email...
+    </div>
+
+    <h3>📦 Extracted Output</h3>
+    <pre id="output"></pre>
+
+    <h3>Summary</h3>
+    <p id="summary"></p>
+
+    <h3>Statistics</h3>
+    <p id="stats"></p>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
