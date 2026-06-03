@@ -1,48 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Email Segregation System</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maritime Intelligence Extraction Engine</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
+<div class="dashboard">
+    <header>
+        <div class="brand">
+            <h1>⚓ Maritime Intelligence Extraction Engine</h1>
+            <p>Deterministic Production Parsing Cluster Engine — No-AI System Infrastructure</p>
+        </div>
+        <div class="controls-top">
+            <label class="switch-container">
+                <input type="checkbox" id="debugToggle" onchange="toggleDebugMode()">
+                <div class="slider"></div>
+                <span>Visual Telemetry Console Debug Mode</span>
+            </label>
+        </div>
+    </header>
 
-    <h1>⚓ Shipping Email Segregation System</h1>
-
-    <p class="subtitle">
-        AI-Assisted Maritime Email Classification & Extraction
-    </p>
-
-    <textarea id="emailText"
-        placeholder="Paste shipping email content here..."></textarea>
-
-    <br>
-
-    <button onclick="processEmail()">Process Email</button>
-    <button onclick="downloadJSON()">Download JSON</button>
-
-    <div id="loader" class="loader hidden">
-        🚢 Processing email...
+    <div class="metrics-bar">
+        <div class="metric-card" id="metric-total">
+            <span class="title">Total Ingested Fixtures</span>
+            <span class="value" id="cardTotal">0</span>
+            <span class="desc">Active structured entries</span>
+        </div>
+        <div class="metric-card" id="metric-tonnage">
+            <span class="title">Tonnage / Positions</span>
+            <span class="value" id="cardTonnage" style="color: var(--accent-blue);">0</span>
+            <span class="desc">Vessel capacity records</span>
+        </div>
+        <div class="metric-card" id="metric-vc">
+            <span class="title">Voyage Cargoes (VC)</span>
+            <span class="value" id="cardVC" style="color: var(--warning);">0</span>
+            <span class="desc">Spot fixture market orders</span>
+        </div>
+        <div class="metric-card" id="metric-tc">
+            <span class="title">Time Charters (TC)</span>
+            <span class="value" id="cardTC" style="color: var(--success);">0</span>
+            <span class="desc">Time delivery orders</span>
+        </div>
+        <div class="metric-card" id="metric-confidence">
+            <span class="title">Calibrated Mean Pool Performance</span>
+            <span class="value" id="cardConfidence">0.00</span>
+            <span class="desc" id="stats">Prime Schema Completeness: 0/0</span>
+        </div>
     </div>
 
-    <h3>📦 Extracted Output</h3>
-    <pre id="output"></pre>
+    <div class="summary-panel">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        <span id="summary">System Boundary Guardrails Active. Engine Core Integrity: Online. Awaiting unstructured ingestion stream.</span>
+    </div>
 
-    <h3>Summary</h3>
-    <p id="summary"></p>
+    <div class="workspace-grid">
+        <div class="panel">
+            <div class="panel-title">Unstructured Email Data Ingestion Block</div>
+            <textarea id="emailText" placeholder="Paste unstructured shipping fixture emails, multiple ship listings, or messy corporate position logs here..."></textarea>
+            <div class="btn-group">
+                <button class="primary" onclick="processEmail()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    Execute Parse Pipeline
+                </button>
+                <button class="secondary" onclick="downloadJSON()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4M7 10l5 5 5-5M12 15V3"></path></svg>
+                    Export Payload Object
+                </button>
+            </div>
+        </div>
 
-    <h3>Statistics</h3>
-    <p id="stats"></p>
+        <div class="panel" id="outputPanel">
+            <div class="panel-title">Normalized Structured JSON Data Payload Output</div>
+            <div class="viewer-container">
+                <div id="loader" class="loader-overlay hidden">
+                    <div class="spinner"></div>
+                    <div class="loader-text">PROCESSING TEXT SEGMENT OBJECT MATRIX...</div>
+                </div>
+                <pre id="output">{}</pre>
+            </div>
+        </div>
+    </div>
 
+    <div class="panel test-suite">
+        <div class="panel-title">Evaluator Multi-Line Batch Stress-Testing Sandbox Grid</div>
+        <div class="test-input-layout">
+            <div>
+                <textarea id="testInput" placeholder="Paste newline-separated batch test rows here (One full input block line per index loop pass execution layout)..."></textarea>
+                <div style="margin-top: 16px;">
+                    <button class="secondary" onclick="runAllTests()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        Execute Automated Parallel Test Runs
+                    </button>
+                </div>
+            </div>
+            <div>
+                <pre id="testOutput">Awaiting parallel validation test script arrays execution pass loops...</pre>
+            </div>
+        </div>
+    </div>
 </div>
-<textarea id="testInput" placeholder="Paste all test cases here (one per line)"></textarea>
-
-<button onclick="runAllTests()">Run All Tests</button>
-
-<pre id="testOutput"></pre>
 
 <script src="script.js"></script>
-
 </body>
 </html>
